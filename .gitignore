@@ -1,0 +1,6 @@
+# emacs backup/autosave files
+*~
+*#
+
+# virtualenv
+ENV
