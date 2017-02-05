@@ -2,5 +2,8 @@
 *~
 *#
 
+# python bytecode
+__pycache__
+
 # virtualenv
 ENV
