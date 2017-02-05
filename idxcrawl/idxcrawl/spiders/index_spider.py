@@ -1,4 +1,4 @@
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
 import scrapy
 from scrapy.exceptions import CloseSpider
@@ -41,8 +41,20 @@ class IndexSpider(scrapy.Spider):
                                                 formdata=self.login_form_data,
                                                 meta={'dont_redirect': True,
                                                       'handle_httpstatus_list': [302]},
-                                                callback=self.check_login_success)
+                                                callback=self.after_login)
 
-    def check_login_success(self, response):
+    @abstractmethod
+    def is_login_success(self, response):
+        pass
+
+    def after_login(self, response):
+        if not self.is_login_success(response):
+            raise CloseSpider('ERROR_LOGIN_FAILED')
+        try:
+            return scrapy.Request(url=self.urls['start_page'], callback=self.parse_start_page)
+        except (AttributeError, KeyError):
+            raise CloseSpider('ERROR_NO_START_PAGE')
+
+    def parse_start_page(self, response):
         # DEBUG
         inspect_response(response, self)

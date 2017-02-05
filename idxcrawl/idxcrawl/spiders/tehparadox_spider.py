@@ -9,3 +9,11 @@ class TehParadoxSpider(IndexSpider):
 
     urls = {'start_page': 'http://tehparadox.com',
             'login_page': 'http://tehparadox.com/forum/login.php?do=login'}
+
+    def is_login_success(self, response):
+        # If login is successful, the response contains the cookie |vbseo_loggedin=yes|.
+        # If login fails, the response contains the cookie |vbseo_loggedin=deleted|.
+        for header in response.headers.getlist('Set-Cookie'):
+            if 'vbseo_loggedin=yes' in header.decode('utf-8'):
+                return True
+        return False
