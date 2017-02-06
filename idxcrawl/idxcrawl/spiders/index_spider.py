@@ -51,10 +51,24 @@ class IndexSpider(scrapy.Spider):
         if not self.is_login_success(response):
             raise CloseSpider('ERROR_LOGIN_FAILED')
         try:
-            return scrapy.Request(url=self.urls['start_page'], callback=self.parse_start_page)
+            return scrapy.Request(url=self.urls['start_page'],
+                                  callback=self.parse_start_page,
+                                  dont_filter=True)
         except (AttributeError, KeyError):
             raise CloseSpider('ERROR_NO_START_PAGE')
 
+    @abstractmethod
+    def get_forum_pages(self, response):
+        pass
+
     def parse_start_page(self, response):
+        for forum_page in self.get_forum_pages(response):
+            yield scrapy.Request(
+                url=forum_page['url'],
+                meta={'forum_page': forum_page},
+                callback=self.parse_forum_page
+            )
+
+    def parse_forum_page(self, response):
         # DEBUG
         inspect_response(response, self)
