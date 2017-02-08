@@ -11,3 +11,12 @@ class ForumPage(scrapy.Item):
     name = scrapy.Field()
     page = scrapy.Field()
     url  = scrapy.Field()
+
+class ThreadPage(scrapy.Item):
+    name        = scrapy.Field()
+    url         = scrapy.Field()
+    author_name = scrapy.Field()
+    author_url  = scrapy.Field()
+    start_date  = scrapy.Field()
+    replies     = scrapy.Field()
+    views       = scrapy.Field()

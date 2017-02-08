@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from idxcrawl.spiders.index_spider import IndexSpider
 
 from idxcrawl.items import ForumPage
+from idxcrawl.items import ThreadPage
 
 class WarezBBSpider(IndexSpider):
     name = 'warezbb'
@@ -58,3 +59,46 @@ class WarezBBSpider(IndexSpider):
                     page=1,
                     url=forum_url
                 )
+
+    def get_thread_pages(self, response):
+        thread_rows = response.xpath(
+            ('//body/div[@id="main-content"]'
+             '/div[@class="wrap"]'
+             '/div[@class="list-wrap"]'
+             '/div[@class="list-rows"][preceding-sibling::div[@class="cat-row"][span/text()="Topics"]]'
+             '/div[@class="topicrow"]'
+            )
+        )
+
+        for thread_row in thread_rows:
+            thread_link = thread_row.xpath(
+                ('./div[@class="description"]'
+                 '/span/span[@class="title"]'
+                 '/a[@class="topictitle"]'
+                )
+            )
+            thread_author_link = thread_row.xpath(
+                ('./div[@class="posts"]'
+                 '/span/a[@href]')
+            )
+
+            thread_name = thread_link.xpath('./text()').extract_first()
+            thread_url  = urljoin(self.urls['start_page'], thread_link.xpath('./@href').extract_first())
+
+            thread_start_date = None
+
+            thread_author_name = thread_author_link.xpath('./text()').extract_first()
+            thread_author_url  = urljoin(self.urls['start_page'], thread_author_link.xpath('./@href').extract_first())
+
+            thread_replies = thread_row.xpath('./div[@class="topics"]/span/text()').extract_first()
+            thread_views   = thread_row.xpath('./div[@class="views"]/span/text()').extract_first()
+
+            yield ThreadPage(
+                name=thread_name,
+                url=thread_url,
+                author_name=thread_author_name,
+                author_url=thread_author_url,
+                start_date=thread_start_date,
+                replies=thread_replies,
+                views=thread_views
+            )

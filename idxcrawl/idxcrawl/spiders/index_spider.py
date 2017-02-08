@@ -69,6 +69,21 @@ class IndexSpider(scrapy.Spider):
                 callback=self.parse_forum_page
             )
 
+    @abstractmethod
+    def get_thread_pages(self, response):
+        pass
+
     def parse_forum_page(self, response):
+        forum_page = response.meta['forum_page']
+
+        for thread_page in self.get_thread_pages(response):
+            yield scrapy.Request(
+                url=thread_page['url'],
+                meta={'forum_page' : forum_page,
+                      'thread_page': thread_page},
+                callback=self.parse_thread_page
+            )
+
+    def parse_thread_page(self, response):
         # DEBUG
         inspect_response(response, self)
