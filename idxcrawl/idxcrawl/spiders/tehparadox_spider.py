@@ -91,3 +91,14 @@ class TehParadoxSpider(IndexSpider):
                 replies=thread_replies,
                 views=thread_views
             )
+
+    def get_thread_start_date(self, response):
+        start_date = ''.join(
+            response.xpath(
+                ('(//body/div[@id="page"]'
+                 '/div[@id="main"]/div[@id="posts"]'
+                 '/div[@class="page"]/div[@id]'
+                 '/table[@id]/tr/td)[1]/text()')
+            ).extract())
+
+        return start_date

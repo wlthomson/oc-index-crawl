@@ -102,3 +102,15 @@ class WarezBBSpider(IndexSpider):
                 replies=thread_replies,
                 views=thread_views
             )
+
+    def get_thread_start_date(self, response):
+        start_date = response.xpath(
+            ('(//body/div[@id="main-content"]'
+             '/div[@id="viewtopic"]/div[@class="wrap"]'
+             '/div[@class="topic-rows"]/div[@id])[1]'
+             '/div[@class="message-content"]'
+             '/div[@class="tools"]/div[@class="date"]'
+             '/a[@href]/text()')
+        ).extract_first()
+
+        return start_date

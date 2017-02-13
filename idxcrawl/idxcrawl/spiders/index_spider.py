@@ -85,5 +85,11 @@ class IndexSpider(scrapy.Spider):
             )
 
     def parse_thread_page(self, response):
+        forum_page  = response.meta['forum_page']
+        thread_page = response.meta['thread_page']
+
+        if not thread_page['start_date']:
+            thread_page['start_date'] = self.get_thread_start_date(response)
+
         # DEBUG
         inspect_response(response, self)
