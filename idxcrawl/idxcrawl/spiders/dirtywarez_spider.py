@@ -4,6 +4,7 @@ from idxcrawl.spiders.index_spider import IndexSpider
 
 from idxcrawl.items import ForumPage
 from idxcrawl.items import ThreadPage
+from idxcrawl.items import Author
 
 class DirtywarezSpider(IndexSpider):
     name = 'dirtywarez'
@@ -77,18 +78,38 @@ class DirtywarezSpider(IndexSpider):
 
             thread_start_date  = thread_author_link.xpath('../text()[2]').extract_first()
 
-            thread_author_name = thread_author_link.xpath('./text()').extract_first()
-            thread_author_url  = urljoin(self.urls['start_page'], thread_author_link.xpath('./@href').extract_first())
-
             thread_replies = thread_row.xpath('./dd[@class="posts"]/text()').extract_first()
             thread_views   = thread_row.xpath('./dd[@class="views"]/text()').extract_first()
 
             yield ThreadPage(
                 name=thread_name,
                 url=thread_url,
-                author_name=thread_author_name,
-                author_url=thread_author_url,
                 start_date=thread_start_date,
                 replies=thread_replies,
                 views=thread_views
             )
+
+    def get_thread_author(self, response):
+        author_box = response.xpath(
+            '(//body/div[@id="wrapc"]'
+            '/div[@id="page-body"]'
+            '/div[@id])[1]'
+            '/div[@class="inner"]'
+            '/dl[contains(@id, "profile")]'
+        )
+
+        author_name = author_box.xpath('./dt/a/text()').extract_first()
+        author_url  = author_box.xpath('./dt/a/@href').extract_first()
+
+        author_join_date   = urljoin(self.urls['start_page'],
+                                     author_box.xpath('./dd[@class="profile-joined"]/text()').extract_first())
+        author_total_posts = author_box.xpath('./dd[@class="profile-posts"]/a/text()').extract_first()
+        author_rank        = author_box.xpath('./dd[@class="profile-rank"]/text()').extract_first()
+
+        return Author(
+            name=author_name,
+            url=author_url,
+            join_date=author_join_date,
+            total_posts=author_total_posts,
+            rank=author_rank
+        )

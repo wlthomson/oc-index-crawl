@@ -15,8 +15,13 @@ class ForumPage(scrapy.Item):
 class ThreadPage(scrapy.Item):
     name        = scrapy.Field()
     url         = scrapy.Field()
-    author_name = scrapy.Field()
-    author_url  = scrapy.Field()
     start_date  = scrapy.Field()
     replies     = scrapy.Field()
     views       = scrapy.Field()
+
+class Author(scrapy.Item):
+    name         = scrapy.Field()
+    url          = scrapy.Field()
+    join_date    = scrapy.Field()
+    total_posts  = scrapy.Field()
+    rank         = scrapy.Field()
