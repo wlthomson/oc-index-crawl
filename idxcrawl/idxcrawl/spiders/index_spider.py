@@ -4,14 +4,25 @@ import scrapy
 from scrapy.exceptions import CloseSpider
 from scrapy.shell import inspect_response
 
+from idxcrawl.link_extractor import LinkExtractor
+
 class IndexSpider(scrapy.Spider):
     __metaclass__ = ABCMeta
+
+    def get_link_extractor(self):
+        try:
+            hosts_file = open('hosts.txt', 'r')
+        except FileNotFoundError:
+            raise CloseSpider('ERROR_NO_HOSTS_FILE')
+        self.link_extractor = LinkExtractor(hosts_file)
+        hosts_file.close()
 
     def parse_args(self, kwargs):
         self.username = kwargs.get('username', '')
         self.password = kwargs.get('password', '')
 
     def __init__(self, **kwargs):
+        self.get_link_extractor()
         self.parse_args(kwargs)
         self.start_requests()
 
@@ -92,6 +103,9 @@ class IndexSpider(scrapy.Spider):
         if not thread_page['start_date']:
             thread_page['start_date'] = self.get_thread_start_date(response)
 
+        file_links = self.link_extractor.extract_file_links(response.body)
+
         # DEBUG
         response.meta['thread_author'] = thread_author
+        response.meta['file_links'] = file_links
         inspect_response(response, self)
