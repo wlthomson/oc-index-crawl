@@ -6,6 +6,10 @@ from scrapy.shell import inspect_response
 
 from idxcrawl.link_extractor import LinkExtractor
 
+from idxcrawl.items import AuthorItem
+from idxcrawl.items import ThreadItem
+from idxcrawl.items import LinkItem
+
 class IndexSpider(scrapy.Spider):
     __metaclass__ = ABCMeta
 
@@ -103,7 +107,28 @@ class IndexSpider(scrapy.Spider):
 
         file_links = self.link_extractor.extract_file_links(response.body)
 
+        yield AuthorItem(
+            name        = thread_author['name'],
+            join_date   = thread_author['join_date'],
+            total_posts = thread_author['total_posts']
+        )
+
+        yield ThreadItem(
+            url         = thread_page['url'],
+            name        = thread_page['name'],
+            forum       = forum_page['name'],
+            start_date  = thread_page['start_date'],
+            replies     = thread_page['replies'],
+            views       = thread_page['views'],
+            author_name = thread_author['name']
+        )
+
+        for file_link in file_links:
+            yield LinkItem(
+                url        = file_link.url,
+                host       = file_link.host,
+                thread_url = thread_page['url']
+            )
+
         # DEBUG
-        response.meta['thread_author'] = thread_author
-        response.meta['file_links'] = file_links
         inspect_response(response, self)
