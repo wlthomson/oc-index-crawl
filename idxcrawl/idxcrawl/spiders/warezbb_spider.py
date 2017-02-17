@@ -1,9 +1,9 @@
 from urllib.parse import urljoin
 
 from idxcrawl.spiders.index_spider import IndexSpider
-
-from idxcrawl.items import ForumPage
-from idxcrawl.items import ThreadPage
+from idxcrawl.spiders.index_spider import Author
+from idxcrawl.spiders.index_spider import Forum
+from idxcrawl.spiders.index_spider import Thread
 
 class WarezBBSpider(IndexSpider):
     name = 'warezbb'
@@ -54,7 +54,7 @@ class WarezBBSpider(IndexSpider):
             forum_url  = urljoin(self.urls['start_page'],
                                  forum_link.xpath('./@href').extract_first())
             if forum_link:
-                yield ForumPage(
+                yield Forum(
                     name=forum,
                     page=1,
                     url=forum_url
@@ -93,7 +93,7 @@ class WarezBBSpider(IndexSpider):
             thread_replies = thread_row.xpath('./div[@class="topics"]/span/text()').extract_first()
             thread_views   = thread_row.xpath('./div[@class="views"]/span/text()').extract_first()
 
-            yield ThreadPage(
+            yield Thread(
                 name=thread_name,
                 url=thread_url,
                 author_name=thread_author_name,

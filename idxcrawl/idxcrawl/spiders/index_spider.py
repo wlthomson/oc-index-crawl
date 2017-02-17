@@ -10,6 +10,30 @@ from idxcrawl.items import AuthorItem
 from idxcrawl.items import ThreadItem
 from idxcrawl.items import LinkItem
 
+class Author:
+    def __init__(self, name=None, url=None, join_date=None,
+                 total_posts=None, rank=None):
+        self.name        = name
+        self.url         = url
+        self.join_date   = join_date
+        self.total_posts = total_posts
+        self.rank        = rank
+
+class Forum:
+    def __init__(self, name=None, page=None, url=None):
+        self.name = name
+        self.page = page
+        self.url  = url
+
+class Thread:
+    def __init__(self, name=None, url=None, start_date=None,
+                 replies=None, views=None):
+        self.name = name
+        self.url  = url
+        self.start_date = start_date
+        self.replies = replies
+        self.views = views
+
 class IndexSpider(scrapy.Spider):
     __metaclass__ = ABCMeta
 
@@ -77,7 +101,7 @@ class IndexSpider(scrapy.Spider):
     def parse_start_page(self, response):
         for forum_page in self.get_forum_pages(response):
             yield scrapy.Request(
-                url=forum_page['url'],
+                url=forum_page.url,
                 meta={'forum_page': forum_page},
                 callback=self.parse_forum_page
             )
@@ -91,7 +115,7 @@ class IndexSpider(scrapy.Spider):
 
         for thread_page in self.get_thread_pages(response):
             yield scrapy.Request(
-                url=thread_page['url'],
+                url=thread_page.url,
                 meta={'forum_page' : forum_page,
                       'thread_page': thread_page},
                 callback=self.parse_thread_page
@@ -102,32 +126,32 @@ class IndexSpider(scrapy.Spider):
         thread_page   = response.meta['thread_page']
         thread_author = self.get_thread_author(response)
 
-        if not thread_page['start_date']:
-            thread_page['start_date'] = self.get_thread_start_date(response)
+        if not thread_page.start_date:
+            thread_page.start_date = self.get_thread_start_date(response)
 
         file_links = self.link_extractor.extract_file_links(response.body)
 
         yield AuthorItem(
-            name        = thread_author['name'],
-            join_date   = thread_author['join_date'],
-            total_posts = thread_author['total_posts']
+            name        = thread_author.name,
+            join_date   = thread_author.join_date,
+            total_posts = thread_author.total_posts
         )
 
         yield ThreadItem(
-            url         = thread_page['url'],
-            name        = thread_page['name'],
-            forum       = forum_page['name'],
-            start_date  = thread_page['start_date'],
-            replies     = thread_page['replies'],
-            views       = thread_page['views'],
-            author_name = thread_author['name']
+            url         = thread_page.url,
+            name        = thread_page.name,
+            forum       = forum_page.name,
+            start_date  = thread_page.start_date,
+            replies     = thread_page.replies,
+            views       = thread_page.views,
+            author_name = thread_author.name
         )
 
         for file_link in file_links:
             yield LinkItem(
                 url        = file_link.url,
                 host       = file_link.host,
-                thread_url = thread_page['url']
+                thread_url = thread_page.url
             )
 
         # DEBUG

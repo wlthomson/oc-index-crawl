@@ -2,10 +2,9 @@ import re
 from urllib.parse import urljoin
 
 from idxcrawl.spiders.index_spider import IndexSpider
-
-from idxcrawl.items import ForumPage
-from idxcrawl.items import ThreadPage
-from idxcrawl.items import Author
+from idxcrawl.spiders.index_spider import Author
+from idxcrawl.spiders.index_spider import Forum
+from idxcrawl.spiders.index_spider import Thread
 
 class TehParadoxSpider(IndexSpider):
     name = 'tehparadox'
@@ -49,7 +48,7 @@ class TehParadoxSpider(IndexSpider):
             forum_url  = urljoin(self.urls['start_page'],
                                  forum_link.xpath('.//@href').extract_first())
             if forum_link:
-                yield ForumPage(
+                yield Forum(
                     name=forum,
                     page=1,
                     url=forum_url
@@ -79,7 +78,7 @@ class TehParadoxSpider(IndexSpider):
 
             thread_replies, thread_views = thread_replies_views.xpath('./text()').extract()
 
-            yield ThreadPage(
+            yield Thread(
                 name=thread_name,
                 url=thread_url,
                 start_date=thread_start_date,
