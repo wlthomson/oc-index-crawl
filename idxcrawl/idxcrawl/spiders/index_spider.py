@@ -11,11 +11,9 @@ class IndexSpider(scrapy.Spider):
 
     def get_link_extractor(self):
         try:
-            hosts_file = open('hosts.txt', 'r')
+            self.link_extractor = LinkExtractor()
         except FileNotFoundError:
             raise CloseSpider('ERROR_NO_HOSTS_FILE')
-        self.link_extractor = LinkExtractor(hosts_file)
-        hosts_file.close()
 
     def parse_args(self, kwargs):
         self.username = kwargs.get('username', '')

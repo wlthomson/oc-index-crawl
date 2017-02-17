@@ -8,11 +8,15 @@ class FileLink:
         self.url  = url
 
 class LinkExtractor:
-    def __init__(self, hosts_file):
+    def __init__(self):
+        hosts_file = open('hosts.txt', 'r')
+
         self.host_names = [host.rstrip() for host in hosts_file]
         self.host_regexes = [(host_name, 'https?://(?:www\.|\w\d{2}\.|download\.)?' + host_name +
                               '\.[a-z]{2,}/[\w~!@#$%&()\-_+=\[\]:;\',.?/]+?(?:(?:\.html)|(?=http|[\s\],<]|$))')
                              for host_name in self.host_names]
+
+        hosts_file.close()
 
     def extract_file_links(self, html):
         response_soup = BeautifulSoup(html, 'lxml')
