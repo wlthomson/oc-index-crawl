@@ -64,9 +64,11 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'idxcrawl.pipelines.SomePipeline': 300,
-#}
+SQLITE_DB = 'idxcrawl.db'
+
+ITEM_PIPELINES = {
+    'idxcrawl.pipelines.SQLitePipeline': 100,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
