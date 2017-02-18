@@ -60,6 +60,21 @@ class SQLitePipeline(object):
            );
         '''.format(self.links_table, self.threads_table)
 
+        self.QUERY_USERS_TABLE = '''
+            SELECT * FROM {}
+            WHERE name=:name;
+        '''.format(self.users_table)
+
+        self.QUERY_THREADS_TABLE = '''
+            SELECT * FROM {}
+            WHERE url=:url;
+        '''.format(self.threads_table)
+
+        self.QUERY_LINKS_TABLE = '''
+            SELECT * FROM {}
+            WHERE thread_url=:thread_url AND url=:url;
+        '''.format(self.links_table)
+
         self.INSERT_USERS_TABLE = '''
             INSERT INTO {} (
                 name,
@@ -104,6 +119,30 @@ class SQLitePipeline(object):
             );
         '''.format(self.links_table)
 
+        self.UPDATE_USERS_TABLE = '''
+            UPDATE {}
+            SET join_date=:join_date,
+                total_posts=:total_posts
+                WHERE name=:name;
+        '''.format(self.users_table)
+
+        self.UPDATE_THREADS_TABLE = '''
+            UPDATE {}
+            SET name=:name,
+                forum=:forum,
+                start_date=:start_date,
+                replies=:replies,
+                views=:views,
+                author=:author
+                WHERE url=:url;
+        '''.format(self.threads_table)
+
+        self.UPDATE_LINKS_TABLE = '''
+            UPDATE {}
+            SET host=:host
+            WHERE thread_url=:thread_url AND url=:url;
+        '''.format(self.links_table)
+
         self.conn   = sqlite3.connect(self.sql_db)
         self.cursor = self.conn.cursor()
 
@@ -116,34 +155,81 @@ class SQLitePipeline(object):
     def process_item(self, item, spider):
         if isinstance(item, AuthorItem):
             self.cursor.execute(
-                self.INSERT_USERS_TABLE, {
-                    'name'       : item['name'],
-                    'join_date'  : item['join_date'],
-                    'total_posts': item['total_posts']
+                self.QUERY_USERS_TABLE, {
+                    'name' : item['name']
                 }
             )
+            if not self.cursor.fetchone():
+                self.cursor.execute(
+                    self.INSERT_USERS_TABLE, {
+                        'name'        : item['name'],
+                        'join_date'   : item['join_date'],
+                        'total_posts' : item['total_posts']
+                    }
+                )
+            else:
+                self.cursor.execute(
+                    self.UPDATE_USERS_TABLE, {
+                        'name'        : item['name'],
+                        'join_date'   : item['join_date'],
+                        'total_posts' : item['total_posts']
+                    }
+                )
 
         if isinstance(item, ThreadItem):
             self.cursor.execute(
-                self.INSERT_THREADS_TABLE, {
-                    'url'        : item['url'],
-                    'name'       : item['name'],
-                    'forum'      : item['forum'],
-                    'start_date' : item['start_date'],
-                    'replies'    : item['replies'],
-                    'views'      : item['views'],
-                    'author'     : item['author_name']
+                self.QUERY_THREADS_TABLE, {
+                    'url' : item['url']
                 }
             )
+            if not self.cursor.fetchone():
+                self.cursor.execute(
+                    self.INSERT_THREADS_TABLE, {
+                        'url'        : item['url'],
+                        'name'       : item['name'],
+                        'forum'      : item['forum'],
+                        'start_date' : item['start_date'],
+                        'replies'    : item['replies'],
+                        'views'      : item['views'],
+                        'author'     : item['author_name']
+                    }
+                )
+            else:
+                self.cursor.execute(
+                    self.UPDATE_THREADS_TABLE, {
+                        'url'        : item['url'],
+                        'name'       : item['name'],
+                        'forum'      : item['forum'],
+                        'start_date' : item['start_date'],
+                        'replies'    : item['replies'],
+                        'views'      : item['views'],
+                        'author'     : item['author_name']
+                    }
+                )
 
         if isinstance(item, LinkItem):
             self.cursor.execute(
-                self.INSERT_LINKS_TABLE, {
-                    'url'       : item['url'],
-                    'host'      : item['host'],
-                    'thread_url': item['thread_url']
+                self.QUERY_LINKS_TABLE, {
+                    'url'        : item['url'],
+                    'thread_url' : item['thread_url']
                 }
             )
+            if not self.cursor.fetchone():
+                self.cursor.execute(
+                    self.INSERT_LINKS_TABLE, {
+                        'url'        : item['url'],
+                        'host'       : item['host'],
+                        'thread_url' : item['thread_url']
+                    }
+                )
+            else:
+                self.cursor.execute(
+                    self.UPDATE_LINKS_TABLE, {
+                        'url'        : item['url'],
+                        'host'       : item['host'],
+                        'thread_url' : item['thread_url']
+                    }
+                )
 
         self.conn.commit()
 
