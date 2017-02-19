@@ -98,10 +98,9 @@ class DirtywarezSpider(IndexSpider):
         )
 
         author_name = author_box.xpath('./dt/a/text()').extract_first()
-        author_url  = author_box.xpath('./dt/a/@href').extract_first()
+        author_url  = urljoin(self.urls['start_page'], author_box.xpath('./dt/a/@href').extract_first())
 
-        author_join_date   = urljoin(self.urls['start_page'],
-                                     author_box.xpath('./dd[@class="profile-joined"]/text()').extract_first())
+        author_join_date   = author_box.xpath('./dd[@class="profile-joined"]/text()').extract_first()
         author_total_posts = author_box.xpath('./dd[@class="profile-posts"]/a/text()').extract_first()
         author_rank        = author_box.xpath('./dd[@class="profile-rank"]/text()').extract_first()
 
