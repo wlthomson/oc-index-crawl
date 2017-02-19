@@ -9,6 +9,9 @@ from idxcrawl.link_extractor import LinkExtractor
 from idxcrawl.items import AuthorItem
 from idxcrawl.items import ThreadItem
 from idxcrawl.items import LinkItem
+from idxcrawl.items import AuthorLoader
+from idxcrawl.items import ThreadLoader
+from idxcrawl.items import LinkLoader
 
 class Author:
     def __init__(self, name=None, url=None, join_date=None,
@@ -131,28 +134,31 @@ class IndexSpider(scrapy.Spider):
 
         file_links = self.link_extractor.extract_file_links(response.body)
 
-        yield AuthorItem(
-            name        = thread_author.name,
-            join_date   = thread_author.join_date,
-            total_posts = thread_author.total_posts
-        )
+        author_loader = AuthorLoader(item=AuthorItem())
+        author_loader.add_value('name', thread_author.name)
+        author_loader.add_value('join_date', thread_author.join_date)
+        author_loader.add_value('total_posts', thread_author.total_posts)
 
-        yield ThreadItem(
-            url         = thread_page.url,
-            name        = thread_page.name,
-            forum       = forum_page.name,
-            start_date  = thread_page.start_date,
-            replies     = thread_page.replies,
-            views       = thread_page.views,
-            author_name = thread_author.name
-        )
+        yield author_loader.load_item()
+
+        thread_loader = ThreadLoader(item=ThreadItem())
+        thread_loader.add_value('url', thread_page.url)
+        thread_loader.add_value('name', thread_page.name)
+        thread_loader.add_value('forum', forum_page.name)
+        thread_loader.add_value('start_date', thread_page.start_date)
+        thread_loader.add_value('replies', thread_page.replies)
+        thread_loader.add_value('views', thread_page.views)
+        thread_loader.add_value('author_name', thread_author.name)
+
+        yield thread_loader.load_item()
 
         for file_link in file_links:
-            yield LinkItem(
-                url        = file_link.url,
-                host       = file_link.host,
-                thread_url = thread_page.url
-            )
+            link_loader = LinkLoader(item=LinkItem())
+            link_loader.add_value('url', file_link.url)
+            link_loader.add_value('host', file_link.host)
+            link_loader.add_value('thread_url', thread_page.url)
+
+            yield link_loader.load_item()
 
         # DEBUG
         inspect_response(response, self)
