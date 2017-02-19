@@ -86,6 +86,17 @@ class TehParadoxSpider(IndexSpider):
                 views=thread_views
             )
 
+    def get_next_forum_page(self, response, forum_page, next_page_num):
+        page_url = re.sub('(?:\/$)|(?:\/index\d+.html)', \
+                          '/index{0}.html'.format(next_page_num), \
+                          response.url)
+
+        return Forum(
+            name=forum_page.name,
+            page=next_page_num,
+            url=page_url
+        )
+
     def get_thread_author(self, response):
         author_box = response.xpath(
             '//body/div[@id="page"]'

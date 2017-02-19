@@ -113,8 +113,13 @@ class IndexSpider(scrapy.Spider):
     def get_thread_pages(self, response):
         pass
 
+    @abstractmethod
+    def get_next_forum_page(self, response):
+        pass
+
     def parse_forum_page(self, response):
         forum_page = response.meta['forum_page']
+        page_num   = forum_page.page
 
         for thread_page in self.get_thread_pages(response):
             yield scrapy.Request(
@@ -122,6 +127,16 @@ class IndexSpider(scrapy.Spider):
                 meta={'forum_page' : forum_page,
                       'thread_page': thread_page},
                 callback=self.parse_thread_page
+            )
+
+        next_page_num   = page_num + 1
+        next_forum_page = self.get_next_forum_page(response, forum_page, next_page_num)
+
+        if next_forum_page.url:
+            yield scrapy.Request(
+                url=next_forum_page.url,
+                meta={'forum_page' : next_forum_page},
+                callback=self.parse_forum_page
             )
 
     def parse_thread_page(self, response):
