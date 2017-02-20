@@ -53,6 +53,7 @@ class ThreadItem(scrapy.Item):
     url         = scrapy.Field()
     name        = scrapy.Field()
     forum       = scrapy.Field()
+    category    = scrapy.Field()
     start_date  = scrapy.Field()
     replies     = scrapy.Field()
     views       = scrapy.Field()

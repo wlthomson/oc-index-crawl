@@ -53,6 +53,7 @@ class DirtywarezSpider(IndexSpider):
             if forum_link:
                 yield Forum(
                     name=forum,
+                    category=self.forums[forum],
                     page=1,
                     url=forum_url
                 )

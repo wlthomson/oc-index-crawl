@@ -23,10 +23,12 @@ class Author:
         self.rank        = rank
 
 class Forum:
-    def __init__(self, name=None, page=None, url=None):
-        self.name = name
-        self.page = page
-        self.url  = url
+    def __init__(self, name=None, category=None, page=None,
+                 url=None):
+        self.name     = name
+        self.category = category
+        self.page     = page
+        self.url      = url
 
 class Thread:
     def __init__(self, name=None, url=None, start_date=None,
@@ -177,6 +179,7 @@ class IndexSpider(scrapy.Spider):
         thread_loader.add_value('url', thread_page.url)
         thread_loader.add_value('name', thread_page.name)
         thread_loader.add_value('forum', forum_page.name)
+        thread_loader.add_value('category', forum_page.category)
         thread_loader.add_value('start_date', thread_page.start_date)
         thread_loader.add_value('replies', thread_page.replies)
         thread_loader.add_value('views', thread_page.views)
