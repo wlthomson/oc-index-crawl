@@ -23,18 +23,18 @@ class SQLitePipeline(object):
         self.sql_db = sql_db
 
     def open_spider(self, spider):
-        self.users_table   = '{}_users'.format(spider.name)
+        self.authors_table   = '{}_authors'.format(spider.name)
         self.threads_table = '{}_threads'.format(spider.name)
         self.links_table   = '{}_links'.format(spider.name)
 
-        self.CREATE_USERS_TABLE = '''
+        self.CREATE_AUTHORS_TABLE = '''
             CREATE TABLE IF NOT EXISTS {} (
                 name        TEXT,
                 join_date   TEXT,
                 total_posts INTEGER,
                 PRIMARY KEY (name)
             );
-        '''.format(self.users_table)
+        '''.format(self.authors_table)
 
         self.CREATE_THREADS_TABLE = '''
             CREATE TABLE IF NOT EXISTS {} (
@@ -48,7 +48,7 @@ class SQLitePipeline(object):
                 PRIMARY KEY (url),
                 FOREIGN KEY (author) REFERENCES {}(name)
             );
-        '''.format(self.threads_table, self.users_table)
+        '''.format(self.threads_table, self.authors_table)
 
         self.CREATE_LINKS_TABLE = '''
            CREATE TABLE IF NOT EXISTS {} (
@@ -60,10 +60,10 @@ class SQLitePipeline(object):
            );
         '''.format(self.links_table, self.threads_table)
 
-        self.QUERY_USERS_TABLE = '''
+        self.QUERY_AUTHORS_TABLE = '''
             SELECT * FROM {}
             WHERE name=:name;
-        '''.format(self.users_table)
+        '''.format(self.authors_table)
 
         self.QUERY_THREADS_TABLE = '''
             SELECT * FROM {}
@@ -75,7 +75,7 @@ class SQLitePipeline(object):
             WHERE thread_url=:thread_url AND url=:url;
         '''.format(self.links_table)
 
-        self.INSERT_USERS_TABLE = '''
+        self.INSERT_AUTHORS_TABLE = '''
             INSERT INTO {} (
                 name,
                 join_date,
@@ -85,7 +85,7 @@ class SQLitePipeline(object):
                 :join_date,
                 :total_posts
             );
-        '''.format(self.users_table)
+        '''.format(self.authors_table)
 
         self.INSERT_THREADS_TABLE = '''
             INSERT INTO {} (
@@ -119,12 +119,12 @@ class SQLitePipeline(object):
             );
         '''.format(self.links_table)
 
-        self.UPDATE_USERS_TABLE = '''
+        self.UPDATE_AUTHORS_TABLE = '''
             UPDATE {}
             SET join_date=:join_date,
                 total_posts=:total_posts
                 WHERE name=:name;
-        '''.format(self.users_table)
+        '''.format(self.authors_table)
 
         self.UPDATE_THREADS_TABLE = '''
             UPDATE {}
@@ -146,7 +146,7 @@ class SQLitePipeline(object):
         self.conn   = sqlite3.connect(self.sql_db)
         self.cursor = self.conn.cursor()
 
-        self.cursor.execute(self.CREATE_USERS_TABLE)
+        self.cursor.execute(self.CREATE_AUTHORS_TABLE)
         self.cursor.execute(self.CREATE_THREADS_TABLE)
         self.cursor.execute(self.CREATE_LINKS_TABLE)
 
@@ -155,13 +155,13 @@ class SQLitePipeline(object):
     def process_item(self, item, spider):
         if isinstance(item, AuthorItem):
             self.cursor.execute(
-                self.QUERY_USERS_TABLE, {
+                self.QUERY_AUTHORS_TABLE, {
                     'name' : item['name']
                 }
             )
             if not self.cursor.fetchone():
                 self.cursor.execute(
-                    self.INSERT_USERS_TABLE, {
+                    self.INSERT_AUTHORS_TABLE, {
                         'name'        : item['name'],
                         'join_date'   : item['join_date'],
                         'total_posts' : item['total_posts']
@@ -169,7 +169,7 @@ class SQLitePipeline(object):
                 )
             else:
                 self.cursor.execute(
-                    self.UPDATE_USERS_TABLE, {
+                    self.UPDATE_AUTHORS_TABLE, {
                         'name'        : item['name'],
                         'join_date'   : item['join_date'],
                         'total_posts' : item['total_posts']
