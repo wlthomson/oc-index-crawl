@@ -50,6 +50,16 @@ class IndexSpider(scrapy.Spider):
         self.username = kwargs.get('username', '')
         self.password = kwargs.get('password', '')
 
+        try:
+            self.min_page_num = int(kwargs['min_page_num'])
+        except (KeyError, TypeError, ValueError):
+            self.min_page_num = 1
+
+        try:
+            self.max_page_num = int(kwargs['max_page_num'])
+        except (KeyError, TypeError, ValueError):
+            self.max_page_num = float('inf')
+
     def __init__(self, **kwargs):
         self.get_link_extractor()
         self.parse_args(kwargs)
@@ -121,23 +131,30 @@ class IndexSpider(scrapy.Spider):
         forum_page = response.meta['forum_page']
         page_num   = forum_page.page
 
-        for thread_page in self.get_thread_pages(response):
-            yield scrapy.Request(
-                url=thread_page.url,
-                meta={'forum_page' : forum_page,
-                      'thread_page': thread_page},
-                callback=self.parse_thread_page
-            )
+        is_valid_page = page_num >= self.min_page_num
 
-        next_page_num   = page_num + 1
-        next_forum_page = self.get_next_forum_page(response, forum_page, next_page_num)
+        if is_valid_page:
+            for thread_page in self.get_thread_pages(response):
+                yield scrapy.Request(
+                    url=thread_page.url,
+                    meta={'forum_page' : forum_page,
+                          'thread_page': thread_page},
+                    callback=self.parse_thread_page
+                )
+            next_page_num = page_num + 1
+        else:
+            next_page_num = self.min_page_num
+        get_next_page = next_page_num <= self.max_page_num
 
-        if next_forum_page.url:
-            yield scrapy.Request(
-                url=next_forum_page.url,
-                meta={'forum_page' : next_forum_page},
-                callback=self.parse_forum_page
-            )
+        if get_next_page:
+            next_forum_page = self.get_next_forum_page(response, forum_page, next_page_num)
+
+            if next_forum_page.url:
+                yield scrapy.Request(
+                    url=next_forum_page.url,
+                    meta={'forum_page' : next_forum_page},
+                    callback=self.parse_forum_page
+                )
 
     def parse_thread_page(self, response):
         forum_page    = response.meta['forum_page']
