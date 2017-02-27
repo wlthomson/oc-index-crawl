@@ -66,8 +66,12 @@ ROBOTSTXT_OBEY = False
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 SQLITE_DB = 'idxcrawl.db'
 
+MONGO_URI = 'mongodb://localhost'
+MONGO_DB  = 'idxcrawl'
+
 ITEM_PIPELINES = {
     'idxcrawl.pipelines.SQLitePipeline': 100,
+    'idxcrawl.pipelines.MongoPipeline': 200
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
