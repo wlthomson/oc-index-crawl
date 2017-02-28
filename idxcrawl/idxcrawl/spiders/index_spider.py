@@ -1,5 +1,3 @@
-from abc import ABCMeta, abstractmethod
-
 import scrapy
 from scrapy.exceptions import CloseSpider
 from scrapy.shell import inspect_response
@@ -40,8 +38,6 @@ class Thread:
         self.views = views
 
 class IndexSpider(scrapy.Spider):
-    __metaclass__ = ABCMeta
-
     def get_link_extractor(self):
         try:
             self.link_extractor = LinkExtractor()
@@ -95,9 +91,8 @@ class IndexSpider(scrapy.Spider):
                                                       'handle_httpstatus_list': [302]},
                                                 callback=self.after_login)
 
-    @abstractmethod
     def is_login_success(self, response):
-        pass
+        raise NotImplementedError
 
     def after_login(self, response):
         if not self.is_login_success(response):
@@ -109,9 +104,8 @@ class IndexSpider(scrapy.Spider):
         except (AttributeError, KeyError):
             raise CloseSpider('ERROR_NO_START_PAGE')
 
-    @abstractmethod
     def get_forum_pages(self, response):
-        pass
+        raise NotImplementedError
 
     def parse_start_page(self, response):
         for forum_page in self.get_forum_pages(response):
@@ -121,13 +115,11 @@ class IndexSpider(scrapy.Spider):
                 callback=self.parse_forum_page
             )
 
-    @abstractmethod
     def get_thread_pages(self, response):
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
     def get_next_forum_page(self, response):
-        pass
+        raise NotImplementedError
 
     def parse_forum_page(self, response):
         forum_page = response.meta['forum_page']
