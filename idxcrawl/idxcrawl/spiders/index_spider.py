@@ -150,6 +150,12 @@ class IndexSpider(scrapy.Spider):
                     callback=self.parse_forum_page
                 )
 
+    def get_thread_author(self, response):
+        raise NotImplementedError
+
+    def get_thread_start_date(self, response):
+        raise NotImplementedError
+
     def parse_thread_page(self, response):
         forum_page    = response.meta['forum_page']
         thread_page   = response.meta['thread_page']
