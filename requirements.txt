@@ -12,7 +12,7 @@ ephem==3.7.6.0
 idna==2.2
 incremental==16.10.1
 jdatetime==1.8.2
-lxml==3.7.2
+lxml==4.6.2
 packaging==16.8
 parsel==1.1.0
 pkg-resources==0.0.0
